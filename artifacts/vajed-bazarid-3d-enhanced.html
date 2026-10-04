@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAJED / BAZARID — شبکه هویت و بازار دیجیتال ۳D</title>
+<meta name="enamad" content="26799686">
+<script type="application/ld+json" id="static-ld">{"@context":"https://schema.org","@type":"Organization","name":"VAJED BAZARID","identifier":"26799686"}</script>
+<style>
+:root {
+  --bg: #060b16;
+  --glass: rgba(14, 28, 54, 0.55);
+  --bd: rgba(0, 229, 255, 0.28);
+  --cyan: #00e5ff;
+  --mag: #ff2fd6;
+  --txt: #eaf4ff;
+  --mut: #8ea3bf;
+  --mono: Consolas, monospace;
+  --sun: #ffd54f;
+  --moon: #e0e7ff;
+  --ribbon-hue: 180;
+  --ambient: 1;
+  --perspective: 1200px;
+  --depth: 40px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, sans-serif; }
+body {
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  overflow-x: hidden;
+  perspective: var(--perspective);
+  transition: background 8s ease, color 4s ease;
+  position: relative;
+}
+
+/* ========== DYNAMIC SKY & RIBBONS ========== */
+.sky {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, var(--sky-top, #0a1628) 0%, var(--sky-mid, #0d2137) 50%, var(--sky-bot, #060b16) 100%);
+  transition: background 12s ease;
+}
+.sun, .moon {
+  position: fixed; border-radius: 50%; z-index: 1; pointer-events: none;
+  transition: all 10s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: blur(0.5px);
+}
+.sun {
+  width: 90px; height: 90px;
+  background: radial-gradient(circle at 30% 30%, #fff9c4, var(--sun) 60%, transparent 70%);
+  box-shadow: 0 0 80px 30px rgba(255, 213, 79, 0.4), 0 0 120px 60px rgba(255, 183, 77, 0.2);
+}
+.moon {
+  width: 70px; height: 70px;
+  background: radial-gradient(circle at 35% 35%, #fff, var(--moon) 55%, #c5cae9 80%);
+  box-shadow: 0 0 40px 10px rgba(224, 231, 255, 0.3);
+  opacity: 0;
+}
+.stars {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 40% 70%, #fff, transparent),
+    radial-gradient(1px 1px at 60% 20%, #e0e7ff, transparent),
+    radial-gradient(1.2px 1.2px at 80% 50%, #fff, transparent),
+    radial-gradient(1px 1px at 10% 80%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 90% 10%, #e0e7ff, transparent);
+  background-size: 200px 200px;
+  animation: twinkle 8s infinite alternate;
+}
+@keyframes twinkle { to { opacity: 0.85; } }
+
+/* Multi-color ribbons (~100 hue states via JS) */
+.ribbons {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden;
+}
+.ribbon {
+  position: absolute; height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg,
+    hsl(var(--ribbon-hue), 90%, 60%),
+    hsl(calc(var(--ribbon-hue) + 40), 95%, 65%),
+    hsl(calc(var(--ribbon-hue) + 80), 90%, 60%),
+    hsl(calc(var(--ribbon-hue) + 120), 95%, 65%),
+    hsl(calc(var(--ribbon-hue) + 160), 90%, 60%));
+  opacity: 0.35; filter: blur(0.8px);
+  animation: ribbonFlow 18s linear infinite;
+  box-shadow: 0 0 12px hsl(var(--ribbon-hue), 80%, 55%);
+}
+@keyframes ribbonFlow {
+  0% { transform: translateX(-30%) rotate(var(--r-rot, -8deg)); }
+  100% { transform: translateX(130%) rotate(var(--r-rot, -8deg)); }
+}
+
+/* Weather particles */
+.weather-layer {
+  position: fixed; inset: 0; z-index: 3; pointer-events: none; overflow: hidden;
+}
+.raindrop, .snowflake, .cloud {
+  position: absolute; pointer-events: none;
+}
+.raindrop {
+  width: 1.5px; height: 14px; background: linear-gradient(to bottom, transparent, #a5d6ff);
+  animation: rainFall linear infinite;
+}
+@keyframes rainFall { to { transform: translateY(110vh); } }
+.snowflake {
+  width: 6px; height: 6px; background: #fff; border-radius: 50%;
+  opacity: 0.7; animation: snowFall linear infinite;
+}
+@keyframes snowFall {
+  to { transform: translateY(110vh) translateX(20px); opacity: 0.2; }
+}
+
+/* Glass 3D */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--bd);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(0,5,20,.55), inset 0 0 14px rgba(255,255,255,.07);
+  transform-style: preserve-3d;
+  transition: transform 0.4s ease, box-shadow 0.4s;
+}
+.glass:hover {
+  transform: translateZ(12px) rotateX(2deg);
+  box-shadow: 0 24px 50px rgba(0,5,20,.7), inset 0 0 18px rgba(255,255,255,.1);
+}
+.neon { color: var(--cyan); text-shadow: 0 0 12px rgba(0,229,255,.7); }
+.mag { color: var(--mag); text-shadow: 0 0 12px rgba(255,47,214,.6); }
+
+header, section, footer {
+  position: relative; z-index: 10;
+  max-width: 1180px; margin: 0 auto; padding: 18px;
+  transform-style: preserve-3d;
+}
+header .glass {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 26px; flex-wrap: wrap; gap: 10px;
+}
+.logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; }
+.btn {
+  cursor: pointer; border: 1px solid var(--bd);
+  background: rgba(0,229,255,.08); color: var(--txt);
+  padding: 10px 18px; border-radius: 14px; transition: .25s; font-size: .9rem;
+}
+.btn:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 18px rgba(0,229,255,.35);
+  transform: translateY(-2px) translateZ(8px);
+}
+.btn.magb { border-color: rgba(255,47,214,.4); background: rgba(255,47,214,.1); }
+
+.hero {
+  margin-top: 20px; padding: 46px 30px; text-align: center;
+  transform: translateZ(20px);
+}
+.hero h1 { font-size: 2.3rem; margin-bottom: 12px; }
+.grid { display: grid; gap: 18px; margin-top: 22px; }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.card { padding: 22px; }
+.card h3 { margin-bottom: 10px; }
+.chip {
+  display: inline-block; border: 1px solid var(--bd); border-radius: 12px;
+  padding: 4px 12px; margin: 3px; font-size: .78rem; cursor: pointer; transition: .2s;
+}
+.chip.on, .chip:hover { background: rgba(0,229,255,.16); border-color: var(--cyan); }
+input, select, textarea {
+  width: 100%; background: rgba(255,255,255,.05); border: 1px solid var(--bd);
+  border-radius: 12px; color: var(--txt); padding: 10px 12px; margin: 5px 0;
+  font-size: .9rem; outline: none;
+}
+input:focus { border-color: var(--cyan); }
+.metric {
+  display: flex; justify-content: space-between; padding: 6px 4px;
+  font-size: .85rem; color: var(--mut);
+  border-bottom: 1px dashed rgba(142,163,191,.2);
+}
+
+/* Modal */
+.overlay {
+  position: fixed; inset: 0; background: rgba(2,6,15,.75);
+  backdrop-filter: blur(8px); display: none; align-items: center;
+  justify-content: center; z-index: 100; opacity: 0; transition: opacity .3s;
+}
+.overlay.show { display: flex; opacity: 1; }
+.modal {
+  width: min(560px, 94vw); max-height: 88vh; overflow-y: auto;
+  padding: 26px; transform: scale(.85) translateY(30px); opacity: 0;
+  transition: all .4s cubic-bezier(.2,.9,.3,1.3); position: relative;
+}
+.overlay.show .modal { transform: scale(1) translateY(0); opacity: 1; }
+.close {
+  position: absolute; top: 14px; left: 14px; width: 36px; height: 36px;
+  border-radius: 50%; border: 1px solid var(--mag);
+  background: rgba(255,47,214,.12); color: var(--mag);
+  font-size: 1.1rem; cursor: pointer; transition: .25s;
+}
+.close:hover { box-shadow: 0 0 16px var(--mag); transform: rotate(90deg); }
+.score { height: 10px; border-radius: 8px; background: rgba(255,255,255,.08); overflow: hidden; margin: 4px 0; }
+.score > div { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--mag)); transition: width 1s ease; }
+
+footer { margin: 40px auto 30px; text-align: center; color: var(--mut); font-size: .85rem; }
+.badge {
+  display: inline-block; border: 1px solid var(--bd); border-radius: 10px;
+  padding: 6px 14px; margin: 6px; background: rgba(0,229,255,.06);
+}
+
+/* ========== FLOATING BOTS ========== */
+.bot {
+  position: fixed; z-index: 50; width: 64px; height: 64px;
+  border-radius: 50%; cursor: pointer; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4), 0 0 20px rgba(0,229,255,.25);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,.2);
+  user-select: none;
+}
+.bot svg { width: 38px; height: 38px; }
+.bot .label {
+  position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+  font-size: 0.65rem; white-space: nowrap; color: var(--txt);
+  background: rgba(0,0,0,.55); padding: 2px 8px; border-radius: 8px;
+  opacity: 0; transition: opacity .3s;
+}
+.bot:hover .label { opacity: 1; }
+.bot.chat-bubble {
+  position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%);
+  background: var(--glass); border: 1px solid var(--bd); padding: 8px 12px;
+  border-radius: 12px; font-size: 0.72rem; max-width: 160px; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity .4s;
+  white-space: normal; z-index: 60;
+}
+.bot.chat-bubble.show { opacity: 1; }
+
+/* Specific bot styles */
+#bot-orbwebs {
+  background: radial-gradient(circle at 30% 30%, rgba(0,229,255,.35), rgba(14,28,54,.7));
+  top: 18%; left: 4%;
+}
+#bot-us {
+  background: radial-gradient(circle at 30% 30%, rgba(255,47,214,.3), rgba(14,28,54,.7));
+  top: 18%; right: 4%;
+}
+#bot-spider {
+  background: radial-gradient(circle at 30% 30%, rgba(167,255,120,.3), rgba(14,28,54,.7));
+  bottom: 12%; left: 50%; transform: translateX(-50%);
+  transition: left 0.35s ease-out, top 0.35s ease-out, transform 0.4s;
+}
+#bot-spider.hiding {
+  background: radial-gradient(circle, rgba(0,0,0,.1), transparent);
+  border-color: transparent; box-shadow: none;
+}
+
+/* Web trails */
+.web-trail {
+  position: fixed; width: 2px; background: linear-gradient(to bottom, rgba(167,255,120,.6), transparent);
+  z-index: 49; pointer-events: none; transform-origin: top;
+  animation: webFade 1.2s forwards;
+}
+@keyframes webFade { to { opacity: 0; height: 0; } }
+
+/* Paper rocket & bomb particles */
+.particle {
+  position: fixed; z-index: 55; pointer-events: none;
+  font-size: 1.1rem; animation: fly 2.8s ease-out forwards;
+}
+@keyframes fly {
+  0% { opacity: 1; transform: translate(0,0) rotate(0); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)); }
+}
+.bomb-effect {
+  position: fixed; width: 40px; height: 40px; border-radius: 50%;
+  background: radial-gradient(circle, #ff2fd6, transparent 70%);
+  z-index: 54; pointer-events: none; animation: boom 0.7s ease-out forwards;
+}
+@keyframes boom {
+  0% { transform: scale(0.2); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+/* Loading screen */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #060b16; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; transition: opacity 1s;
+}
+#loader.done { opacity: 0; pointer-events: none; }
+.loader-orb {
+  width: 80px; height: 80px; border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--cyan); border-right-color: var(--mag);
+  animation: spin 1.2s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { margin-top: 20px; color: var(--mut); font-size: 0.9rem; }
+
+/* Weather badge */
+.weather-badge {
+  position: fixed; top: 12px; left: 12px; z-index: 40;
+  background: var(--glass); border: 1px solid var(--bd);
+  backdrop-filter: blur(12px); border-radius: 14px;
+  padding: 8px 14px; font-size: 0.78rem; color: var(--mut);
+  display: flex; align-items: center; gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.5rem; }
+  .bot { width: 52px; height: 52px; }
+  .bot svg { width: 30px; height: 30px; }
+}
+</style>
+</head>
+<body>
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-orb"></div>
+  <div class="loader-text">در حال بارگذاری شبکه هویت سه‌بعدی…</div>
+</div>
+
+<!-- SKY & CELESTIAL -->
+<div class="sky"></div>
+<div class="sun" id="sun"></div>
+<div class="moon" id="moon"></div>
+<div class="stars" id="stars"></div>
+<div class="ribbons" id="ribbons"></div>
+<div class="weather-layer" id="weatherLayer"></div>
+
+<!-- Weather badge -->
+<div class="weather-badge" id="weatherBadge">
+  <span id="wIcon">☀️</span>
+  <span id="wText">بارگذاری هوا…</span>
+</div>
+
+<!-- FLOATING BOTS -->
+<div class="bot" id="bot-orbwebs" title="ORBWEBS">
+  <svg viewBox="0 0 64 64" fill="none">
+    <!-- Conceptual ORBWEBS: glowing orb + radial web -->
+    <circle cx="32" cy="32" r="18" stroke="#00e5ff" stroke-width="1.5" fill="url(#orbGrad)"/>
+    <circle cx="32" cy="32" r="8" fill="#00e5ff" opacity="0.6"/>
+    <path d="M32 14 L32 50 M14 32 L50 32 M20 20 L44 44 M44 20 L20 44" stroke="#00e5ff" stroke-width="1" opacity="0.7"/>
+    <path d="M32 8 Q40 20 48 18 Q40 32 48 46 Q32 40 16 46 Q24 32 16 18 Q24 20 32 8" stroke="#00e5ff" stroke-width="0.8" fill="none" opacity="0.5"/>
+    <defs>
+      <radialGradient id="orbGrad"><stop offset="0%" stop-color="#00e5ff"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+  </svg>
+  <span class="label">ORBWEBS</span>
+  <div class="chat-bubble" id="chat-orb"></div>
+</div>
+
+<div class="bot" id="bot-us" title="US">
+  <svg viewBox="0 0 64 64" fill="none">
+    <!-- US: two interlocking circles + link symbol -->
+    <circle cx="24" cy="32" r="14" stroke="#ff2fd6" stroke-width="2" fill="rgba(255,47,214,0.15)"/>
+    <circle cx="40" cy="32" r="14" stroke="#00e5ff" stroke-width="2" fill="rgba(0,229,255,0.15)"/>
+    <path d="M28 28 L36 36 M36 28 L28 36" stroke="#fff" stroke-width="1.5" opacity="0.8"/>
+    <text x="32" y="38" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">US</text>
+  </svg>
+  <span class="label">US</span>
+  <div class="chat-bubble" id="chat-us"></div>
+</div>
+
+<div class="bot" id="bot-spider" title="SPIDER 🌱🕸️">
+  <svg viewBox="0 0 64 64" fill="none" id="spiderSvg">
+    <!-- Cute spider with question-mark vibe -->
+    <ellipse cx="32" cy="36" rx="12" ry="10" fill="#a7ff78" opacity="0.85"/>
+    <circle cx="32" cy="24" r="9" fill="#a7ff78"/>
+    <circle cx="28" cy="22" r="2.2" fill="#060b16"/>
+    <circle cx="36" cy="22" r="2.2" fill="#060b16"/>
+    <path d="M20 30 Q12 22 8 28 M20 36 Q10 40 6 34 M20 42 Q14 50 8 46
+             M44 30 Q52 22 56 28 M44 36 Q54 40 58 34 M44 42 Q50 50 56 46" stroke="#a7ff78" stroke-width="1.8" fill="none"/>
+    <text x="32" y="40" text-anchor="middle" fill="#060b16" font-size="10" font-weight="bold">?</text>
+  </svg>
+  <span class="label">SPIDER 🌱🕸️</span>
+  <div class="chat-bubble" id="chat-spider"></div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="glass">
+    <div class="logo"><span class="neon">VAJED</span> <span class="mag">/ BAZARID</span></div>
+    <nav style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="openM('authModal')">ورود / ثبت‌نام</button>
+      <button class="btn" onclick="openM('profileModal')">پروفایل</button>
+      <button class="btn" onclick="scrollTo0('explorer')">اکسپلورر</button>
+      <button class="btn" onclick="scrollTo0('studio')">استودیو پست</button>
+      <button class="btn" onclick="scrollTo0('assessment')">ارزیابی سه‌موتوره</button>
+      <button class="btn" onclick="scrollTo0('logistics')">هاب لجستیک</button>
+      <button class="btn" onclick="scrollTo0('token')">توکنومیکس OWB</button>
+      <button class="btn" onclick="scrollTo0('audit')">ممیزی هفتگی</button>
+      <button class="btn magb" onclick="triggerBotMeeting()">🤖 جلسه ربات‌ها</button>
+    </nav>
+  </div>
+</header>
+
+<section class="glass hero">
+  <h1><span class="neon">شبکه هویت</span> <span class="mag">واجد / بازارید</span></h1>
+  <p style="color:var(--mut)">بازار هویت‌محور با ارزیابی سه‌موتوره، توکنومیکس OWB و لجستیک تمام‌عیار — نسخه سه‌بعدی پویا</p>
+</section>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="authModal"><div class="glass modal">
+  <button class="close" onclick="closeM('authModal')">✕</button>
+  <h3 class="neon">ورود همه‌کاناله</h3>
+  <div class="grid g3" style="gap:8px;margin:12px 0">
+    <button class="btn" onclick="auth('Discord')">🎮 Discord</button>
+    <button class="btn" onclick="auth('Google')">🔍 Google</button>
+    <button class="btn" onclick="auth('Instagram')">📸 Instagram</button>
+  </div>
+  <hr style="border-color:var(--bd);margin:14px 0">
+  <b>ورود با موبایل (OTP)</b>
+  <input id="otpPhone" placeholder="۰۹xxxxxxxxx">
+  <button class="btn magb" onclick="sendOtp()">ارسال کد یکبار مصرف</button>
+  <div id="otpBox" style="display:none;margin-top:8px">
+    <input id="otpCode" placeholder="کد ۶ رقمی">
+    <div class="neon" id="otpTimer"></div>
+    <button class="btn" onclick="verifyOtp()">تأیید کد</button>
+  </div>
+  <hr style="border-color:var(--bd);margin:14px 0">
+  <b>متریک مخاطبان</b>
+  <div class="metric"><span>Rubika</span><span>۱۲,۴۰۰ دنبال‌کننده</span></div>
+  <div class="metric"><span>Eitaa</span><span>۸,۳۱۰ دنبال‌کننده</span></div>
+  <div class="metric"><span>Virasty</span><span>۲۴,۹۰۰ بازدید ماهانه</span></div>
+</div></div>
+
+<!-- PROFILE MODAL -->
+<div class="overlay" id="profileModal"><div class="glass modal">
+  <button class="close" onclick="closeM('profileModal')">✕</button>
+  <h3 class="mag">پروفایل کاربر</h3>
+  <label>نام قابل ویرایش:</label>
+  <input id="pfName" placeholder="نام شما">
+  <label>کانال هشدار امنیتی (موبایل):</label>
+  <input id="pfMobile" placeholder="موبایل برای هشدارهای امنیتی">
+  <label><input type="checkbox" id="pfAlert" style="width:auto"> دریافت هشدار امنیتی فعال باشد</label>
+  <button class="btn" onclick="saveProfile()">ذخیره پروفایل</button>
+  <hr style="border-color:var(--bd);margin:14px 0">
+  <button class="btn magb" onclick="exportBackup()">⬇ خروجی پشتیبان JSON</button>
+</div></div>
+
+<!-- EXPLORER -->
+<section id="explorer" class="glass card">
+  <h3 class="neon">🧭 اکسپلورر مجزا</h3>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+    <span class="chip on" onclick="setCat(this,'all')">همه</span>
+    <span class="chip" onclick="setCat(this,'trad')">سنتی</span>
+    <span class="chip" onclick="setCat(this,'dig')">دیجیتال</span>
+    <span class="chip" onclick="setCat(this,'re')">املاک</span>
+  </div>
+  <input id="searchBox" placeholder="جستجوی زنده..." oninput="renderPosts()">
+  <div id="tagRow" style="margin:8px 0"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <span class="chip on" onclick="setSort(this,'score')">مرتب‌سازی: موتورها</span>
+    <span class="chip" onclick="setSort(this,'price')">قیمت</span>
+    <span class="chip" onclick="setSort(this,'date')">تاریخ</span>
+  </div>
+  <div class="grid g3" id="postGrid" style="margin-top:14px"></div>
+</section>
+
+<!-- POST STUDIO -->
+<section id="studio" class="glass card">
+  <h3 class="mag">✍️ استودیو ساخت پست</h3>
+  <select id="stCat" onchange="studioFields()">
+    <option value="trad">سنتی</option><option value="dig">دیجیتال</option><option value="re">املاک</option>
+  </select>
+  <input id="stTitle" placeholder="عنوان محصول/ملک">
+  <input id="stPrice" placeholder="قیمت (تومان)">
+  <div id="stFields"></div>
+  <button class="btn neon" onclick="createPost()">انتشار پست + تولید کاداستر و JSON-LD</button>
+  <div id="stOut" class="glass" style="padding:12px;margin-top:10px;font-family:var(--mono);font-size:.75rem;white-space:pre-wrap;display:none"></div>
+</section>
+
+<!-- ASSESSMENT -->
+<section id="assessment" class="glass card">
+  <h3 class="neon">⚙️ ارزیابی سه‌موتوره محصول</h3>
+  <select id="asPost"></select>
+  <button class="btn" onclick="runAssess()">اجرای موتورها</button>
+  <div id="asOut" style="display:none;margin-top:12px">
+    <b>موتور ۱ — مخاطب و احساسات</b>
+    <div class="score"><div id="e1"></div></div><div id="e1t" class="metric"></div>
+    <b>موتور ۲ — ایمپرشن جستجو و Google Discovery</b>
+    <div class="score"><div id="e2"></div></div><div id="e2t" class="metric"></div>
+    <b>موتور ۳ — اصالت و یکپارچگی زنجیره</b>
+    <div class="score"><div id="e3"></div></div><div id="e3t" class="metric"></div>
+    <div class="mag" id="asFinal" style="margin-top:8px"></div>
+  </div>
+</section>
+
+<!-- LOGISTICS -->
+<section id="logistics" class="glass card">
+  <h3 class="mag">🚚 هاب لجستیک</h3>
+  <div class="grid g3">
+    <div class="glass card"><h3>تیپاکس — بین‌شهری</h3><p style="color:var(--mut);font-size:.85rem">ارسال بین‌استانی با رهگیری زنجیره‌ای و تأمین مالی ۳۰روزه</p><button class="btn" onclick="logi('Tipax')">ثبت سفارش</button></div>
+    <div class="glass card"><h3>اسنپ — محلی</h3><p style="color:var(--mut);font-size:.85rem">پیک درون‌شهری لحظه‌ای با تسویه امانی</p><button class="btn" onclick="logi('Snapp')">ثبت سفارش</button></div>
+    <div class="glass card"><h3>VIP Driver</h3><p style="color:var(--mut);font-size:.85rem">عضویت راننده: ۳ ماه دوره آزمایشی / قرارداد ۱ ساله</p><button class="btn" onclick="logi('VIP')">عضویت راننده</button></div>
+  </div>
+  <div id="logiOut" class="metric" style="margin-top:10px"></div>
+  <div class="glass card" style="margin-top:12px"><b>اسکرو ۳۰روزه معوق + امتیاز اعتباری</b>
+    <div class="metric"><span>وجه تضمین معوق (۳۰ روز)</span><span>۱۰۰٪ در اسکرو</span></div>
+    <div class="metric"><span>امتیاز اعتباری شما</span><span class="neon" id="creditScore">۷۴۰ / ۸۵۰</span></div>
+  </div>
+</section>
+
+<!-- TOKENOMICS -->
+<section id="token" class="glass card">
+  <h3 class="neon">🪙 توکنومیکس OWB و استخرهای نقدینگی</h3>
+  <div class="grid g3">
+    <div class="glass card metric"><span>OWB/TOMAN</span><span>۱۲,۴۵۰</span></div>
+    <div class="glass card metric"><span>OWB/BRICS</span><span>۱.۸۴</span></div>
+    <div class="glass card metric"><span>OWB/EUR</span><span>۰.۲۷</span></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center">
+    <input id="swAmt" type="number" value="100" style="max-width:160px" oninput="swap()">
+    <select id="swPair" onchange="swap()" style="max-width:220px">
+      <option value="12450">OWB → TOMAN</option><option value="1.84">OWB → BRICS</option><option value="0.27">OWB → EUR</option>
+    </select>
+    <div class="neon" id="swOut">—</div>
+  </div>
+  <hr style="border-color:var(--bd);margin:14px 0">
+  <b>🔮 فال حافظ (میکروپرداخت فرهنگی)</b>
+  <p style="color:var(--mut);font-size:.85rem">هزینه: ۲ OWB</p>
+  <button class="btn magb" onclick="hafez()">دریافت فال</button>
+  <div id="hafezOut" class="glass card" style="margin-top:10px;display:none"></div>
+</section>
+
+<!-- AUDIT -->
+<section id="audit" class="glass card">
+  <h3 class="mag">📊 شبیه‌ساز ممیزی هفتگی موجودی</h3>
+  <button class="btn" onclick="audit()">اجرای ممیزی این هفته</button>
+  <div id="auditOut" style="margin-top:12px"></div>
+</section>
+
+<footer class="glass card">
+  <div><span class="neon">VAJED / BAZARID</span> — تمام حقوق محفوظ است • نسخه ۳D پویا</div>
+  <div class="badge">📜 مجوز رسمی: ۱۸۲۱۱۶۷</div>
+  <div class="badge">🛡️ اینماد: ۲۶۷۹۹۶۸۶</div>
+  <div class="badge">↩️ شرایط بازگشت وجه: ۳۰ روزه تضمینی</div>
+</footer>
+
+<script>
+// ========== CORE UTILS ==========
+function injectLD(obj){const s=document.createElement('script');s.type='application/ld+json';s.textContent=JSON.stringify(obj);document.head.appendChild(s);}
+injectLD({"@context":"https://schema.org","@type":"WebSite","name":"VAJED BAZARID","identifier":"26799686","url":"https://bazarid.local"});
+
+function openM(id){document.getElementById(id).classList.add('show');}
+function closeM(id){document.getElementById(id).classList.remove('show');}
+function scrollTo0(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
+function auth(p){alert('احراز هویت از طریق '+p+' در حال انجام است...');injectLD({"@type":"LoginAction","name":p});}
+
+// OTP
+let otpInt=null;
+function sendOtp(){document.getElementById('otpBox').style.display='block';let t=120;clearInterval(otpInt);
+ otpInt=setInterval(()=>{t--;document.getElementById('otpTimer').textContent='انقضای کد: '+Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+ if(t<=0){clearInterval(otpInt);document.getElementById('otpTimer').textContent='کد منقضی شد.';}},1000);}
+function verifyOtp(){if(document.getElementById('otpCode').value.length===6){alert('ورود موفق! خوش آمدید');clearInterval(otpInt);closeM('authModal');injectLD({"@type":"LoginAction","name":"MobileOTP"});}else alert('کد باید ۶ رقم باشد');}
+
+// Profile
+function saveProfile(){localStorage.setItem('vajedProfile',JSON.stringify({name:pfName.value,mobile:pfMobile.value,alert:pfAlert.checked}));alert('پروفایل ذخیره شد'+(pfAlert.checked?' — هشدارهای امنیتی فعال':''));}
+function exportBackup(){
+ const data={profile:JSON.parse(localStorage.getItem('vajedProfile')||'{}'),posts,ts:new Date().toISOString(),license:1821167,enamad:26799686};
+ const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vajed-backup.json';a.click();}
+
+// Explorer
+let cat='all',sortMode='score';
+const seedTags=['دست‌ساز','لوکس','جدید','موجودی','توکنیزه','کاداستر'];
+const posts=[];for(let i=1;i<=9;i++){const cats=['trad','dig','re'];posts.push({id:i,title:'کالا/ملک نمونه '+i,cat:cats[i%3],price:Math.floor(Math.random()*90+10)*1e6,date:1404000+i,score:Math.floor(Math.random()*40+60),tags:[seedTags[i%6],seedTags[(i+2)%6]]});}
+function setCat(el,c){document.querySelectorAll('#explorer .chip')[0].parentElement.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));el.classList.add('on');cat=c;renderPosts();}
+function setSort(el,m){el.parentElement.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));el.classList.add('on');sortMode=m;renderPosts();}
+function renderPosts(){
+ const tagRow=document.getElementById('tagRow');tagRow.innerHTML=seedTags.map(t=>`<span class="chip" onclick="this.classList.toggle('on');renderPosts()">${t}</span>`).join('');
+ const q=document.getElementById('searchBox').value.trim();
+ const onTags=[...document.querySelectorAll('#tagRow .chip.on')].map(x=>x.textContent);
+ let r=posts.filter(p=>(cat==='all'||p.cat===cat)&&(!q||p.title.includes(q))&&onTags.every(t=>p.tags.includes(t)));
+ r.sort((a,b)=>sortMode==='score'?b.score-a.score:sortMode==='price'?a.price-b.price:b.date-a.date);
+ const names={trad:'سنتی',dig:'دیجیتال',re:'املاک'};
+ document.getElementById('postGrid').innerHTML=r.map(p=>`<div class="glass card"><h4>${p.title}</h4><div class="metric"><span>ماهیت</span><span>${names[p.cat]}</span></div><div class="metric"><span>قیمت</span><span>${p.price.toLocaleString('fa-IR')} ت</span></div><div class="metric"><span>امتیاز موتورها</span><span class="neon">${p.score}</span></div><div>${p.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>`).join('')||'<p style="color:var(--mut)">موردی یافت نشد</p>';}
+
+// Studio
+const catFields={trad:['جنس و اصل کالا','گواهی اصالت سنتی'],dig:['نوع فایل/لایسنس','نشانی بلاک‌چین'],re:['شماره قطعه کاداستر','مساحت (متر مربع)']};
+function studioFields(){document.getElementById('stFields').innerHTML=catFields[stCat.value].map(f=>`<input placeholder="${f}">`).join('');}
+function cadastralHash(){let h='CAD-';for(let i=0;i<4;i++)h+=Math.random().toString(16).slice(2,6).toUpperCase()+'-';return h.slice(0,-1);}
+function createPost(){
+ const t=stTitle.value||'بدون عنوان';const hash=cadastralHash();
+ const tags=['#'+encodeURIComponent(t.split(' ')[0]),'#VAJED','#BAZARID','#OWB','#'+({trad:'سنتی',dig:'دیجیتال',re:'املاک'}[stCat.value])].join(' ');
+ const ld={"@context":"https://schema.org","@type":"Product","name":t,"sku":hash,"offers":{"@type":"Offer","price":stPrice.value||"0","priceCurrency":"IRT"},"brand":"VAJED BAZARID"};
+ injectLD(ld);
+ posts.unshift({id:posts.length+1,title:t,cat:stCat.value,price:+(stPrice.value||0),date:1404000,score:70,tags:seedTags.slice(0,2)});
+ renderPosts();
+ const o=document.getElementById('stOut');o.style.display='block';
+ o.textContent='✔ پست منتشر شد\nکد کاداستر: '+hash+'\nهشتگ‌های SEO: '+tags+'\n\nJSON-LD:\n'+JSON.stringify(ld,null,2);}
+
+// Assessment
+function fillPosts(){asPost.innerHTML=posts.map(p=>`<option value="${p.id}">${p.title}</option>`).join('');}
+function runAssess(){const p=posts.find(x=>x.id==asPost.value);if(!p)return;
+ const s=[p.score,Math.min(98,p.score+6),Math.max(55,p.score-4)];
+ ['e1','e2','e3'].forEach((id,i)=>document.getElementById(id).style.width=s[i]+'%');
+ document.getElementById('e1t').textContent='سنتیمنت مثبت: '+(s[0]+15)+'% — مخاطب فعال';
+ document.getElementById('e2t').textContent='ایمپرشن ماهانه گوگل: '+(s[1]*137).toLocaleString('fa-IR');
+ document.getElementById('e3t').textContent='یکپارچگی زنجیره: '+s[2]+'% — زنجیره سالم';
+ document.getElementById('asFinal').textContent='امتیاز نهایی سه‌موتوره: '+Math.round((s[0]+s[1]+s[2])/3)+' / ۱۰۰';
+ document.getElementById('asOut').style.display='block';}
+
+// Logistics
+function logi(v){const g=740+Math.floor(Math.random()*40);
+ document.getElementById('logiOut').innerHTML=`<span>سفارش ${v} ثبت شد — اسکرو ۳۰روزه فعال</span><span class="neon">امتیاز اعتباری: ${g}/۸۵۰</span>`;
+ document.getElementById('creditScore').textContent=g+' / ۸۵۰';injectLD({"@type":"Order","seller":"VAJED","carrier":v});}
+
+// Tokenomics
+function swap(){const r=+swPair.value,a=+swAmt.value||0;document.getElementById('swOut').textContent='= '+(a*r).toLocaleString('en-US', {maximumFractionDigits:2});}
+const poems=['به ســاقی بگو کـه بـده جام می — که روزگار به دست تو دادم نام','یاری اندر کس نمی‌بیند یاران را — چشمهٔ مشکل‌گشا چیست درمان را','درخت دوستی بنشان که کام دل به بار آرد — نهال دشمنی برکن که رنج بی‌شمار آرد'];
+function hafez(){const p=poems[Math.floor(Math.random()*poems.length)];
+ const o=document.getElementById('hafezOut');o.style.display='block';
+ o.innerHTML='<b class="mag">فال شما (۲ OWB کسر شد):</b><p style="margin-top:8px">'+p+'</p><p style="color:var(--mut);font-size:.8rem;margin-top:6px">تراکنش فرهنگی ثبت شد ✓</p>';
+ injectLD({"@type":"PayAction","amount":"2 OWB","purpose":"Hafez Divination"});}
+
+// Audit
+function audit(){let rows='<table style="width:100%;border-collapse:collapse">';
+ rows+='<tr>'+['کالا','موجودی سیستم','شمارش واقعی','انحراف'].map(h=>`<th class="neon" style="padding:8px;border-bottom:1px solid var(--bd)">${h}</th>`).join('')+'</tr>';
+ let issues=0;
+ posts.slice(0,6).forEach(p=>{const sys=Math.floor(Math.random()*50+10),real=sys+(Math.random()<0.3?Math.floor(Math.random()*5-2):0);const d=real-sys;if(d)issues++;
+ rows+=`<tr style="text-align:center">${[p.title,sys,real,d].map((c,i)=>`<td style="padding:8px;border-bottom:1px dashed rgba(142,163,191,.2);color:${i==3&&c?'var(--mag)':'var(--txt)'}">${c}</td>`).join('')}</tr>`;});
+ rows+='</table><p style="margin-top:10px;color:var(--mut)">ممیزی هفته '+new Date().toLocaleDateString('fa-IR')+' — مغایرت‌ها: <b class="mag">'+issues+'</b></p>';
+ document.getElementById('auditOut').innerHTML=rows;}
+
+// ========== DAY / NIGHT + RIBBONS + WEATHER ==========
+function updateCelestial() {
+  const now = new Date();
+  const h = now.getHours() + now.getMinutes()/60;
+  const sun = document.getElementById('sun');
+  const moon = document.getElementById('moon');
+  const stars = document.getElementById('stars');
+  const root = document.documentElement;
+
+  // Approximate sun position (simple arc)
+  const dayProgress = (h - 6) / 12; // 6am to 6pm
+  let sunX = 10 + dayProgress * 80;
+  let sunY = 15 + Math.sin(dayProgress * Math.PI) * -25;
+  if (h < 6 || h > 18) {
+    sun.style.opacity = '0';
+    moon.style.opacity = '1';
+    stars.style.opacity = '1';
+    sunX = 50; sunY = 20;
+    root.style.setProperty('--sky-top', '#050a14');
+    root.style.setProperty('--sky-mid', '#0a1428');
+    root.style.setProperty('--sky-bot', '#03060f');
+    root.style.setProperty('--bg', '#03060f');
+    root.style.setProperty('--txt', '#e0e7ff');
+  } else {
+    sun.style.opacity = '1';
+    moon.style.opacity = '0';
+    stars.style.opacity = '0';
+    // Day colors from yellow-white morning → bright → golden afternoon
+    if (h < 10) {
+      root.style.setProperty('--sky-top', '#87ceeb');
+      root.style.setProperty('--sky-mid', '#b3e5fc');
+      root.style.setProperty('--sky-bot', '#e1f5fe');
+      root.style.setProperty('--bg', '#0d2137');
+    } else if (h < 16) {
+      root.style.setProperty('--sky-top', '#4fc3f7');
+      root.style.setProperty('--sky-mid', '#29b6f6');
+      root.style.setProperty('--sky-bot', '#0288d1');
+    } else {
+      root.style.setProperty('--sky-top', '#ff8a65');
+      root.style.setProperty('--sky-mid', '#ff7043');
+      root.style.setProperty('--sky-bot', '#e64a19');
+    }
+  }
+  sun.style.left = sunX + '%';
+  sun.style.top = sunY + '%';
+  moon.style.left = (100 - sunX) + '%';
+  moon.style.top = (30 - sunY/2) + '%';
+
+  // Ribbon hue cycles ~100 states over 24h (hue 0-360 ≈ 100 steps of 3.6)
+  const hue = Math.floor((h / 24) * 100) * 3.6;
+  root.style.setProperty('--ribbon-hue', hue);
+}
+
+// Create ribbons
+function createRibbons() {
+  const cont = document.getElementById('ribbons');
+  for (let i = 0; i < 9; i++) {
+    const r = document.createElement('div');
+    r.className = 'ribbon';
+    r.style.top = (8 + i * 11) + '%';
+    r.style.width = (40 + Math.random()*50) + '%';
+    r.style.setProperty('--r-rot', (Math.random()*20 - 10) + 'deg');
+    r.style.animationDuration = (14 + Math.random()*12) + 's';
+    r.style.animationDelay = (Math.random()*8) + 's';
+    r.style.opacity = 0.2 + Math.random()*0.25;
+    cont.appendChild(r);
+  }
+}
+
+// Weather (Open-Meteo free, no key) - Tehran default
+async function fetchWeather() {
+  try {
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.69&longitude=51.39&current=temperature_2m,weather_code,cloud_cover,precipitation&timezone=auto');
+    const data = await res.json();
+    const c = data.current;
+    const code = c.weather_code;
+    let icon = '☀️', text = `${Math.round(c.temperature_2m)}°C`;
+    const layer = document.getElementById('weatherLayer');
+    layer.innerHTML = '';
+
+    if (code >= 61 && code <= 67 || code >= 80) { // rain
+      icon = '🌧️'; text += ' بارانی';
+      for (let i=0;i<40;i++) {
+        const d = document.createElement('div');
+        d.className = 'raindrop';
+        d.style.left = Math.random()*100 + '%';
+        d.style.animationDuration = (0.6 + Math.random()*0.8) + 's';
+        d.style.animationDelay = Math.random()*2 + 's';
+        layer.appendChild(d);
+      }
+    } else if (code >= 71 && code <= 77) { // snow
+      icon = '❄️'; text += ' برفی';
+      for (let i=0;i<30;i++) {
+        const d = document.createElement('div');
+        d.className = 'snowflake';
+        d.style.left = Math.random()*100 + '%';
+        d.style.animationDuration = (4 + Math.random()*4) + 's';
+        d.style.animationDelay = Math.random()*3 + 's';
+        layer.appendChild(d);
+      }
+    } else if (c.cloud_cover > 60) {
+      icon = '☁️'; text += ' ابری';
+    } else if (code === 0) {
+      icon = '☀️'; text += ' آفتابی';
+    } else {
+      icon = '⛅'; text += ' نیمه‌ابری';
+    }
+    document.getElementById('wIcon').textContent = icon;
+    document.getElementById('wText').textContent = text;
+  } catch(e) {
+    document.getElementById('wText').textContent = 'هوا: شبیه‌سازی محلی';
+  }
+}
+
+// ========== FLOATING BOTS LOGIC ==========
+const bots = {
+  orb: document.getElementById('bot-orbwebs'),
+  us: document.getElementById('bot-us'),
+  spider: document.getElementById('bot-spider')
+};
+const chats = {
+  orb: document.getElementById('chat-orb'),
+  us: document.getElementById('chat-us'),
+  spider: document.getElementById('chat-spider')
+};
+
+const messages = {
+  orb: ['شبکه پایدار است ✨', 'ORBWEBS آنلاین', 'تارهای هویت محکم‌اند', 'اسکن کاداستر تکمیل شد'],
+  us: ['ما با هم قوی‌تریم 🤝', 'US connected', 'هماهنگی کامل', 'لجستیک سینک شد'],
+  spider: ['؟؟؟ کی اینجاست؟ 🌱', 'تار می‌زنم…', 'نزدیک نشو زیاد 🕸️', 'بازی؟', 'مخفی می‌شم…']
+};
+
+function showChat(botKey, text, duration=2800) {
+  const el = chats[botKey];
+  el.textContent = text;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+function botTalk() {
+  const keys = ['orb','us','spider'];
+  const k = keys[Math.floor(Math.random()*3)];
+  const msg = messages[k][Math.floor(Math.random()*messages[k].length)];
+  showChat(k, msg);
+}
+
+// Spider mouse follow (not too close)
+let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX; mouseY = e.clientY;
+});
+
+function updateSpider() {
+  if (bots.spider.classList.contains('hiding')) return;
+  const rect = bots.spider.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  const dx = mouseX - cx;
+  const dy = mouseY - cy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist > 120) {
+    // Move gently toward mouse but keep distance
+    const angle = Math.atan2(dy, dx);
+    const targetX = mouseX - Math.cos(angle) * 90;
+    const targetY = mouseY - Math.sin(angle) * 90;
+    bots.spider.style.left = Math.max(20, Math.min(window.innerWidth-80, targetX)) + 'px';
+    bots.spider.style.top = Math.max(20, Math.min(window.innerHeight-80, targetY)) + 'px';
+    bots.spider.style.bottom = 'auto';
+    bots.spider.style.transform = 'none';
+    // Occasional web shot
+    if (Math.random() < 0.08) shootWeb(cx, cy, mouseX, mouseY);
+  }
+}
+
+function shootWeb(x1,y1,x2,y2) {
+  const trail = document.createElement('div');
+  trail.className = 'web-trail';
+  const len = Math.hypot(x2-x1, y2-y1);
+  const angle = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+  trail.style.left = x1 + 'px';
+  trail.style.top = y1 + 'px';
+  trail.style.height = len + 'px';
+  trail.style.transform = `rotate(${angle-90}deg)`;
+  document.body.appendChild(trail);
+  setTimeout(() => trail.remove(), 1200);
+}
+
+// Paper rockets & bombs
+function launchRocket(fromBot) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = '🚀';
+  const rect = fromBot.getBoundingClientRect();
+  p.style.left = rect.left + 20 + 'px';
+  p.style.top = rect.top + 20 + 'px';
+  const tx = (Math.random()-0.5)*600;
+  const ty = -200 - Math.random()*300;
+  p.style.setProperty('--tx', tx + 'px');
+  p.style.setProperty('--ty', ty + 'px');
+  p.style.setProperty('--rot', (Math.random()*720-360) + 'deg');
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 2800);
+}
+
+function dropBomb() {
+  const hero = document.querySelector('.hero');
+  if (!hero) return;
+  const rect = hero.getBoundingClientRect();
+  const b = document.createElement('div');
+  b.className = 'bomb-effect';
+  b.style.left = (rect.left + Math.random()*rect.width) + 'px';
+  b.style.top = (rect.top + Math.random()*rect.height*0.6) + 'px';
+  document.body.appendChild(b);
+  setTimeout(() => b.remove(), 700);
+  // small shake
+  hero.style.transform = 'translateZ(20px) translateX(4px)';
+  setTimeout(() => hero.style.transform = 'translateZ(20px)', 80);
+}
+
+// Meeting: gather in center
+function triggerBotMeeting() {
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+  bots.orb.style.left = (centerX - 100) + 'px';
+  bots.orb.style.top = (centerY - 40) + 'px';
+  bots.us.style.left = (centerX + 40) + 'px';
+  bots.us.style.top = (centerY - 40) + 'px';
+  bots.spider.style.left = (centerX - 30) + 'px';
+  bots.spider.style.top = (centerY + 50) + 'px';
+  bots.spider.style.bottom = 'auto';
+  bots.spider.style.transform = 'none';
+
+  showChat('orb', 'جلسه شروع شد ✨');
+  setTimeout(() => showChat('us', 'هماهنگی US فعال'), 600);
+  setTimeout(() => showChat('spider', 'منم اومدم ؟؟ 🕸️'), 1200);
+
+  // After meeting, spider may hide → become web shape of ORBWEBS
+  setTimeout(() => {
+    if (Math.random() > 0.4) {
+      bots.spider.classList.add('hiding');
+      bots.spider.querySelector('svg').style.opacity = '0.15';
+      showChat('spider', 'مخفی شدم… تبدیل به تار ORBWEBS');
+      showChat('orb', 'SPIDER داخل شبکه است');
+      // games start: rockets + occasional bomb
+      setTimeout(() => {
+        launchRocket(bots.orb);
+        launchRocket(bots.us);
+        if (Math.random() > 0.5) dropBomb();
+      }, 1500);
+      setTimeout(() => {
+        bots.spider.classList.remove('hiding');
+        bots.spider.querySelector('svg').style.opacity = '1';
+        // return to corners roughly
+        resetBotPositions();
+      }, 6000);
+    } else {
+      setTimeout(resetBotPositions, 4000);
+    }
+  }, 3500);
+}
+
+function resetBotPositions() {
+  bots.orb.style.left = '4%';
+  bots.orb.style.top = '18%';
+  bots.us.style.right = '4%';
+  bots.us.style.left = 'auto';
+  bots.us.style.top = '18%';
+  bots.spider.style.left = '50%';
+  bots.spider.style.top = 'auto';
+  bots.spider.style.bottom = '12%';
+  bots.spider.style.transform = 'translateX(-50%)';
+}
+
+// Random interactions
+function randomBotAction() {
+  const r = Math.random();
+  if (r < 0.25) {
+    launchRocket(bots.orb);
+    launchRocket(bots.us);
+  } else if (r < 0.4) {
+    dropBomb();
+  } else if (r < 0.7) {
+    botTalk();
+  } else {
+    // spider bothers others with web
+    const targets = [bots.orb, bots.us];
+    const t = targets[Math.floor(Math.random()*2)];
+    const r1 = bots.spider.getBoundingClientRect();
+    const r2 = t.getBoundingClientRect();
+    shootWeb(r1.left+30, r1.top+30, r2.left+30, r2.top+30);
+    showChat('spider', 'تار زدم به دوستم 🕸️');
+  }
+}
+
+// Init
+createRibbons();
+updateCelestial();
+setInterval(updateCelestial, 60000); // every minute
+fetchWeather();
+setInterval(fetchWeather, 15*60*1000);
+
+setInterval(updateSpider, 80);
+setInterval(botTalk, 9000 + Math.random()*6000);
+setInterval(randomBotAction, 14000 + Math.random()*10000);
+
+// Loader
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('done');
+    setTimeout(() => document.getElementById('loader').remove(), 1000);
+  }, 1400);
+});
+
+// Original inits
+fillPosts(); studioFields(); renderPosts(); swap();
+</script>
+</body>
+</html>
