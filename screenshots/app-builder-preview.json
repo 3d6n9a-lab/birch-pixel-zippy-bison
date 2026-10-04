@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "BAZARID Identity Network",
+      "hasCanvas": false,
+      "bodyTextLen": 873,
+      "bodyTextHash": "20de7f2c57e7a57bcc765942760e95363be065f7d0819963479ada035a7f99cd",
+      "bodyTextPrefix": "B BAZARIDIdentity Network Modular AI Web Studio · ORBWEBS Home B",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "BAZARID Identity Network",
+      "hasCanvas": true,
+      "bodyTextLen": 755,
+      "bodyTextHash": "5cfe9c4a8a5344854e8dd6444ae38d81394ff5994666e6ff3eceb01955494f4a",
+      "bodyTextPrefix": "B BAZARIDIdentity Network JR Home Builder Domains Agents Analyti",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
